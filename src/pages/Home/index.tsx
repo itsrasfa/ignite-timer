@@ -1,61 +1,56 @@
-import { Play } from 'phosphor-react'
-import { useForm } from 'react-hook-form'
+import { useContext } from 'react'
+import { FormProvider, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { HandPalm, Play } from 'phosphor-react'
+
+import { CyclesContext } from '../../contexts/CyclesContext'
+import { NewCycleForm } from './NewCycleForm'
+import { Countdown } from './Countdown'
 import { schemas } from './schema'
+import { FormValues } from './types'
 import * as S from './styles'
 
 export function Home() {
-  const { register, handleSubmit, reset, watch } = useForm({
+  const { activeCycle, createNewCycle, interrupetCurrentCycle } =
+    useContext(CyclesContext)
+
+  const newCycleForm = useForm<FormValues>({
     resolver: zodResolver(schemas),
+    defaultValues: {
+      task: '',
+      minutesAmount: 0,
+    },
   })
+
+  const { handleSubmit, reset, watch } = newCycleForm
+
+  const handleCreateNewCycle = (data: FormValues) => {
+    createNewCycle(data)
+    reset()
+  }
 
   const task = watch('task')
   const isEmpty = !task
 
-  const handleCreateNewCycle = (data: any) => {
-    reset()
-  }
-
   return (
     <S.HomeContainer>
       <form onSubmit={handleSubmit(handleCreateNewCycle)}>
-        <S.FormContainer>
-          <label htmlFor="task">Vou trabalhar em</label>
-          <S.TaskInput
-            id="task"
-            list="task-suggestions"
-            placeholder="Dê um nome para o seu projeto"
-            {...register('task')}
-          />
-          <datalist id="task-suggestions">
-            <option value="Projeto 1"></option>
-            <option value="Projeto 2"></option>
-            <option value="Projeto 3"></option>
-          </datalist>
+        <FormProvider {...newCycleForm}>
+          <NewCycleForm />
+        </FormProvider>
+        <Countdown />
 
-          <label htmlFor="minutesAmount">durante</label>
-          <S.MinutesAmountInput
-            type="number"
-            id="minutesAmount"
-            step={5}
-            placeholder="00"
-            {...register('minutesAmount', { valueAsNumber: true })}
-          />
-          <span>minutos.</span>
-        </S.FormContainer>
-
-        <S.CountdownContainer>
-          <span>0</span>
-          <span>0</span>
-          <S.Separator>:</S.Separator>
-          <span>0</span>
-          <span>0</span>
-        </S.CountdownContainer>
-
-        <S.StartCountdownButton disabled={isEmpty} type="submit">
-          <Play size={22} />
-          Começar
-        </S.StartCountdownButton>
+        {activeCycle ? (
+          <S.StopCountdownButton onClick={interrupetCurrentCycle} type="button">
+            <HandPalm size={22} />
+            Interromper
+          </S.StopCountdownButton>
+        ) : (
+          <S.StartCountdownButton disabled={isEmpty} type="submit">
+            <Play size={22} />
+            Começar
+          </S.StartCountdownButton>
+        )}
       </form>
     </S.HomeContainer>
   )
