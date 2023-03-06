@@ -23,4 +23,13 @@ export const GlobalStyle = createGlobalStyle`
     font-weight: 400;
     font-size: 1rem;
   }
+
+  html {
+    @media (max-width: 800px) {
+      font-size: 89.2%;
+    }
+    @media (max-width: 400px) {
+      font-size: 82.2%;
+    }
+  }
 `
